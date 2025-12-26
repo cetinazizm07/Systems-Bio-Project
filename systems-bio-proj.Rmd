@@ -1,0 +1,72 @@
+---
+title: "systems-bio-proj"
+output: html_document
+date: '2025-12-26'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+data
+```{r}
+library(GEOquery) 
+gse <- getGEO("GSE44076", GSEMatrix = TRUE)
+eset <- gse[[1]]
+pheno <- pData(eset)
+exprs_mat <- exprs(eset)
+exprset <- exprs(gse[[1]])
+```
+
+pca for normalization
+
+```{r}
+exprset_norm <- log2(exprset + 1)
+exprset_norm_t <- t(exprset_norm)
+
+# PCA
+pca <- prcomp(exprset_norm_t, center = TRUE, scale. = TRUE)
+
+
+
+```
+
+```{r}
+plot(
+  pca$x[,1],
+  pca$x[,2],
+  pch = 19,
+  xlab = "PC1",
+  ylab = "PC2",
+  main = "PCA plot"
+)
+
+```
+```{r}
+var_exp <- (pca$sdev^2) / sum(pca$sdev^2) * 100
+
+plot(
+  pca$x[,1],
+  pca$x[,2],
+  pch = 19,
+  xlab = paste0("PC1 (", round(var_exp[1], 1), "%)"),
+  ylab = paste0("PC2 (", round(var_exp[2], 1), "%)"),
+  main = "PCA of GSE expression data"
+)
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(pca_df, aes(PC1, PC2, color = Group)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(
+    title = "PCA plot",
+    x = paste0("PC1 (", round(var_exp[1], 1), "%)"),
+    y = paste0("PC2 (", round(var_exp[2], 1), "%)")
+  )
+
+```
+
